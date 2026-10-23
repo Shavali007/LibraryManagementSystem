@@ -8,7 +8,8 @@
 **Library Management System**
 ---
 A full-stack Library Management System built with **Java Spring Boot** (backend) and **React.js** (frontend).  
-This application allows managing books, authors, categories, and members. Users can borrow and return books, and search the library efficiently.
+This application allows managing books, authors, categories, and members. Users can borrow and return books, and search the library efficiently. An integrated System to ease library management
+
 ---
 ## Features
 - Add, update, delete books
