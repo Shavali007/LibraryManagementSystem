@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import API_BASE_URL from "../api";
 
 function BorrowBook() {
   const [books, setBooks] = useState([]);
@@ -11,32 +13,31 @@ function BorrowBook() {
   useEffect(() => {
     async function loadData() {
       try {
-        console.log("🔄 Loading books, members, and borrow records...");
+        console.log("Loading books, members, and borrow records...");
 
         const [booksRes, membersRes, borrowRes] = await Promise.all([
-          fetch("http://localhost:8081/api/books"),
-          fetch("http://localhost:8081/api/members"),
-          fetch("http://localhost:8081/api/borrow"),
+          fetch(`${API_BASE_URL}/books`),
+          fetch(`${API_BASE_URL}/members`),
+          fetch(`${API_BASE_URL}/borrow`),
         ]);
+
+        if (!booksRes.ok || !membersRes.ok || !borrowRes.ok) {
+          throw new Error("Failed to load library data.");
+        }
 
         const booksData = await booksRes.json();
         const membersData = await membersRes.json();
         let borrowData = await borrowRes.json();
 
-        // ✅ Ensure it's always an array
         if (!Array.isArray(borrowData)) {
           borrowData = borrowData.content || [];
         }
 
-        console.log("✅ Books loaded:", booksData);
-        console.log("✅ Members loaded:", membersData);
-        console.log("✅ Borrow records loaded:", borrowData);
-
-        setBooks(booksData || []);
-        setMembers(membersData || []);
-        setBorrowRecords(borrowData || []);
+        setBooks(Array.isArray(booksData) ? booksData : []);
+        setMembers(Array.isArray(membersData) ? membersData : []);
+        setBorrowRecords(borrowData);
       } catch (error) {
-        console.error("❌ Error loading data:", error);
+        console.error("Error loading data:", error);
         setBorrowRecords([]);
       }
     }
@@ -48,63 +49,49 @@ function BorrowBook() {
     e.preventDefault();
 
     const record = {
-      book: { id: parseInt(selectedBook) },
-      member: { id: parseInt(selectedMember) },
+      book: { id: parseInt(selectedBook, 10) },
+      member: { id: parseInt(selectedMember, 10) },
     };
 
-    console.log("📤 Sending borrow record to backend:", record);
-
     try {
-      const response = await fetch("http://localhost:8081/api/borrow", {
+      const response = await fetch(`${API_BASE_URL}/borrow`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(record),
       });
 
-      console.log("📥 Borrow API response status:", response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ Borrow API error response:", errorText);
-        alert("Failed to borrow book. Check console for details.");
+        console.error("Borrow API error:", errorText);
+        alert("Failed to borrow book. Check the console for details.");
         return;
       }
-
-      const savedRecord = await response.json();
-      console.log("✅ Borrow record saved successfully:", savedRecord);
 
       alert("Book borrowed successfully!");
       window.location.reload();
     } catch (error) {
-      console.error("❌ Error sending borrow record:", error);
+      console.error("Error sending borrow record:", error);
       alert("Error connecting to backend!");
     }
   };
 
   const handleReturn = async (id) => {
-    console.log(`🔁 Sending return request for record ID: ${id}`);
-
     try {
-      const response = await fetch(`http://localhost:8081/api/borrow/${id}/return`, {
+      const response = await fetch(`${API_BASE_URL}/borrow/${id}/return`, {
         method: "PUT",
       });
 
-      console.log("📥 Return API response status:", response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ Return API error:", errorText);
-        alert("Failed to return book. Check console for details.");
+        console.error("Return API error:", errorText);
+        alert("Failed to return book. Check the console for details.");
         return;
       }
-
-      const updatedRecord = await response.json();
-      console.log("✅ Book returned successfully:", updatedRecord);
 
       alert("Book returned!");
       window.location.reload();
     } catch (error) {
-      console.error("❌ Error returning book:", error);
+      console.error("Error returning book:", error);
       alert("Error connecting to backend!");
     }
   };
@@ -112,6 +99,7 @@ function BorrowBook() {
   return (
     <div className="container mt-5">
       <h2>Borrow a Book</h2>
+
       <form onSubmit={handleBorrow} className="mb-4">
         <div className="row">
           <div className="col-md-5">
@@ -130,6 +118,7 @@ function BorrowBook() {
               ))}
             </select>
           </div>
+
           <div className="col-md-5">
             <label className="form-label">Select Member</label>
             <select
@@ -146,6 +135,7 @@ function BorrowBook() {
               ))}
             </select>
           </div>
+
           <div className="col-md-2 d-flex align-items-end">
             <button type="submit" className="btn btn-primary w-100">
               Borrow
@@ -155,6 +145,7 @@ function BorrowBook() {
       </form>
 
       <h4>Borrow Records</h4>
+
       <table className="table table-bordered">
         <thead>
           <tr>
@@ -167,6 +158,7 @@ function BorrowBook() {
             <th>Action</th>
           </tr>
         </thead>
+
         <tbody>
           {borrowRecords.map((r) => (
             <tr key={r.id}>

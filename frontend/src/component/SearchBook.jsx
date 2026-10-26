@@ -1,52 +1,53 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import API_BASE_URL from "../api";
 
 function SearchBook() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false); // 🆕 Track if search was made
+  const [hasSearched, setHasSearched] = useState(false);
+
   const navigate = useNavigate();
 
-  // 🔍 Handle search
   const handleSearch = async (e) => {
     e.preventDefault();
 
     if (!query.trim()) {
-      console.warn("⚠️ Empty search query!");
+      console.warn("Empty search query!");
       return;
     }
 
-    console.log("🔎 Searching for:", query);
     setLoading(true);
-    setHasSearched(true); // ✅ Mark that user performed a search
+    setHasSearched(true);
 
     try {
-      const res = await fetch(`http://localhost:8081/api/books/search?q=${query}`);
-      console.log("📡 API response status:", res.status);
+      const res = await fetch(
+        `${API_BASE_URL}/books/search?q=${encodeURIComponent(query.trim())}`
+      );
 
       if (!res.ok) {
         const errText = await res.text();
-        console.error("❌ Backend error:", errText);
-        alert("Error fetching books. Check console for details.");
+        console.error("Backend error:", errText);
+        alert("Error fetching books. Check the console for details.");
+        setResults([]);
         return;
       }
 
       const data = await res.json();
-      console.log("✅ Books received from backend:", data);
-      setResults(data);
+      setResults(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("🔥 Network or fetch error:", error);
+      console.error("Network or fetch error:", error);
       alert("Failed to connect to backend!");
+      setResults([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 👉 Handle book click
   const handleBookClick = (id) => {
-    console.log("📘 Navigating to book details page for ID:", id);
     navigate(`/books/${id}`);
   };
 
@@ -54,8 +55,10 @@ function SearchBook() {
     <div className="container mt-5">
       <h2 className="mb-4 text-center">🔍 Search Books</h2>
 
-      {/* ✅ Search Form */}
-      <form onSubmit={handleSearch} className="d-flex justify-content-center mb-4">
+      <form
+        onSubmit={handleSearch}
+        className="d-flex justify-content-center mb-4"
+      >
         <input
           type="text"
           className="form-control me-2"
@@ -64,15 +67,14 @@ function SearchBook() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button type="submit" className="btn btn-primary">
-          Search
+
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
         </button>
       </form>
 
-      {/* ✅ Loading */}
       {loading && <p className="text-center">Loading...</p>}
 
-      {/* ✅ Results */}
       {!loading && results.length > 0 && (
         <div className="table-responsive">
           <table className="table table-hover align-middle text-center">
@@ -84,6 +86,7 @@ function SearchBook() {
                 <th>Publisher</th>
               </tr>
             </thead>
+
             <tbody>
               {results.map((book) => (
                 <tr
@@ -102,7 +105,6 @@ function SearchBook() {
         </div>
       )}
 
-      {/* ✅ Show "No results" only AFTER a search */}
       {!loading && hasSearched && results.length === 0 && (
         <p className="text-center text-muted">
           No books found for “{query}”.
@@ -113,3 +115,4 @@ function SearchBook() {
 }
 
 export default SearchBook;
+

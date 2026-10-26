@@ -1,0 +1,104 @@
+```groovy
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+    }
+```groovy
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Verify Docker') {
+            steps {
+                bat 'docker --version'
+                bat 'docker compose version'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                bat 'docker compose build'
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                bat 'docker compose up -d'
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                bat 'docker compose ps'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the stage logs for details.'
+        }
+    }
+}
+```
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Verify Docker') {
+            steps {
+                bat 'docker --version'
+                bat 'docker compose version'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                bat 'docker compose build'
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                bat 'docker compose up -d'
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                bat 'docker compose ps'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the stage logs for details.'
+        }
+    }
+}
+```

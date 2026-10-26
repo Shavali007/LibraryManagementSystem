@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import API_BASE_URL from "../api";
 
 function AddBook() {
   const [bookTitle, setBookTitle] = useState("");
+  const [availableCopies, setAvailableCopies] = useState("1");
   const [authorId, setAuthorId] = useState("");
   const [publisherId, setPublisherId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -18,12 +20,11 @@ function AddBook() {
  useEffect(() => {
   async function fetchDropdowns() {
     try {
-      const [authorsRes, publishersRes, categoriesRes] = await Promise.all([
-        fetch("http://localhost:8081/api/authors"),
-        fetch("http://localhost:8081/api/publishers"),
-        fetch("http://localhost:8081/api/categories"),
-      ]);
-
+const [authorsRes, publishersRes, categoriesRes] = await Promise.all([
+  fetch(`${API_BASE_URL}/authors`),
+  fetch(`${API_BASE_URL}/publishers`),
+  fetch(`${API_BASE_URL}/categories`),
+]);
       // Parse JSON properly
       const [authorsData, publishersData, categoriesData] = await Promise.all([
         authorsRes.json(),
@@ -53,6 +54,7 @@ function AddBook() {
 
     const formData = new FormData();
     formData.append("title", bookTitle);
+    formData.append("availableCopies", availableCopies);
     formData.append("authorId", authorId || "");
     formData.append("publisherId", publisherId || "");
     formData.append("categoryId", categoryId || "");
@@ -61,15 +63,15 @@ function AddBook() {
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const response = await fetch("http://localhost:8081/api/books", {
-        method: "POST",
-        body: formData, // Send as multipart/form-data
-      });
-
+     const response = await fetch(`${API_BASE_URL}/books`, {
+  method: "POST",
+  body: formData,
+});
       if (response.ok) {
         alert("Book added successfully!");
         // Reset form
         setBookTitle("");
+        setAvailableCopies("1");
         setAuthorId("");
         setPublisherId("");
         setCategoryId("");
@@ -101,6 +103,19 @@ function AddBook() {
               placeholder="Enter book title"
               value={bookTitle}
               onChange={(e) => setBookTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Available copies */}
+          <div className="mb-3">
+            <label className="form-label">Available Copies</label>
+            <input
+              type="number"
+              className="form-control"
+              min="1"
+              value={availableCopies}
+              onChange={(e) => setAvailableCopies(e.target.value)}
               required
             />
           </div>

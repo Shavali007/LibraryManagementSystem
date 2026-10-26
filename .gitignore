@@ -23,3 +23,9 @@ Thumbs.db
 
 # ===== Uploads / Local Assets =====
 uploads/
+
+.env
+.env.*
+!.env.example
+
+backend/uploads/

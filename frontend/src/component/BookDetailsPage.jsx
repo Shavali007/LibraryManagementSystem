@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import API_BASE_URL from "../api";
 
 function BookDetailsPage() {
   const { id } = useParams();
@@ -10,7 +11,7 @@ function BookDetailsPage() {
   useEffect(() => {
     async function fetchBook() {
       try {
-        const res = await fetch(`http://localhost:8081/api/books/${id}`);
+      const res = await fetch(`${API_BASE_URL}/books/${id}`);
         const data = await res.json();
         console.log(data);
         setBook(data);
@@ -40,7 +41,7 @@ function BookDetailsPage() {
         <div className="col-md-4 mb-3">
           {book.image ? (
             <img
-              src={`http://localhost:8081${book.image}`}
+             src={`${API_BASE_URL}${book.image}`}
               alt={book.title}
               className="img-fluid rounded shadow-sm"
             />

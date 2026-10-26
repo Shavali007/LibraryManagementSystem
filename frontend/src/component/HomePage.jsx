@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./HomePage.css"; // your custom CSS
+import "./HomePage.css";
+import API_BASE_URL from "../api";
 
 function HomePage() {
   const [books, setBooks] = useState([]);
@@ -9,7 +10,7 @@ function HomePage() {
   useEffect(() => {
     async function fetchBooks() {
       try {
-        const data = await fetch("http://localhost:8081/api/books");
+      const data = await fetch(`${API_BASE_URL}/books`);
         const fetchData = await data.json();
         const sorted = fetchData.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -66,7 +67,7 @@ function HomePage() {
                 {/* Book Image */}
                 {book.image ? (
                   <img
-                    src={book.image ? `http://localhost:8081${book.image}` : "/no-image.png"}
+                    src={book.image ? `${API_BASE_URL}${book.image}` : "/no-image.png"}
                     alt={book.title}
                     style={{ width: "100%", height: "250px", objectFit: "cover" }}
                   />

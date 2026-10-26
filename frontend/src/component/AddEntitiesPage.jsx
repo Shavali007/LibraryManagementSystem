@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import API_BASE_URL from "../api";
 
 function AddEntitiesPage() {
   // States for author
@@ -17,7 +18,7 @@ function AddEntitiesPage() {
   // Helper function to handle POST requests
   const handleSubmit = async (endpoint, data) => {
     try {
-      const res = await fetch(`http://localhost:8081/api/${endpoint}`, {
+     const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
