@@ -89,6 +89,7 @@ public class BookController {
     // ✅ Add book (with optional image)
     @PostMapping(consumes = {"multipart/form-data"})
     public String addBook(@RequestParam String title,
+                          @RequestParam(defaultValue = "1") int availableCopies,
                           @RequestParam(required = false) Integer authorId,
                           @RequestParam(required = false) Integer publisherId,
                           @RequestParam(required = false) Integer categoryId,
@@ -97,6 +98,7 @@ public class BookController {
                           @RequestParam(required = false) MultipartFile image) {
         Book book = new Book();
         book.setTitle(title);
+        book.setAvailableCopies(availableCopies);
         book.setShelf(shelf);
         book.setDescription(description);
 

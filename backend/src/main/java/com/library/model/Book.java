@@ -22,6 +22,9 @@ public class Book {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "available_copies", nullable = false)
+    private int availableCopies = 1;
+
     @ManyToOne
     @JoinColumn(name = "author_id")
     private Author author;
@@ -65,6 +68,9 @@ public class Book {
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public int getAvailableCopies() { return availableCopies; }
+    public void setAvailableCopies(int availableCopies) { this.availableCopies = availableCopies; }
 
     public Author getAuthor() { return author; }
     public void setAuthor(Author author) { this.author = author; }
