@@ -13,29 +13,29 @@ stages {
     }
 
     stage('Verify Docker') {
-        steps {
-            bat 'docker --version'
-            bat 'docker compose version'
-        }
+    steps {
+        bat 'docker --version'
+        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" version'
     }
+}
 
     stage('Build Docker Images') {
-        steps {
-            bat 'docker compose build'
-        }
+    steps {
+        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" build'
     }
+}
 
-    stage('Deploy Application') {
-        steps {
-            bat 'docker compose up -d'
-        }
+stage('Deploy Application') {
+    steps {
+        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" up -d'
     }
+}
 
-    stage('Verify Deployment') {
-        steps {
-            bat 'docker compose ps'
-        }
+stage('Verify Deployment') {
+    steps {
+        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" ps'
     }
+}
 }
 
 post {
