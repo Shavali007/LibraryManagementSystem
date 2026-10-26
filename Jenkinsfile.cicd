@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 options {
     timestamps()
 }
@@ -43,11 +42,9 @@ post {
     success {
         echo 'CI/CD pipeline completed successfully!'
     }
-
     failure {
         echo 'Pipeline failed. Check the stage logs for details.'
     }
 }
-```
 
 }
