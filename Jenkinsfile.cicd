@@ -41,11 +41,18 @@ stages {
         }
     }
 
-    stage('Verify Deployment') {
-        steps {
-            bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" ps'
+stage('Verify Deployment') {
+    steps {
+        withCredentials([string(
+            credentialsId: 'mysql-root-password',
+            variable: 'MYSQL_ROOT_PASSWORD'
+        )]) {
+            bat '''
+                "C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" ps
+            '''
         }
     }
+}
 }
 
 post {
