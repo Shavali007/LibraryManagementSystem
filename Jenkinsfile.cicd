@@ -1,6 +1,8 @@
 pipeline {
 agent any
-
+git add Jenkinsfile.cicd
+git commit -m "Use Jenkins credentials for database password"
+git push origin main
 options {
     timestamps()
 }
@@ -13,35 +15,46 @@ stages {
     }
 
     stage('Verify Docker') {
-    steps {
-        bat 'docker --version'
-        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" version'
+        steps {
+            bat 'docker --version'
+            bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" version'
+        }
     }
-}
 
     stage('Build Docker Images') {
-    steps {
-        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" build'
+        steps {
+            withCredentials([string(
+                credentialsId: 'mysql-root-password',
+                variable: 'MYSQL_ROOT_PASSWORD'
+            )]) {
+                bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" build'
+            }
+        }
     }
-}
 
-stage('Deploy Application') {
-    steps {
-        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" up -d'
+    stage('Deploy Application') {
+        steps {
+            withCredentials([string(
+                credentialsId: 'mysql-root-password',
+                variable: 'MYSQL_ROOT_PASSWORD'
+            )]) {
+                bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" up -d'
+            }
+        }
     }
-}
 
-stage('Verify Deployment') {
-    steps {
-        bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" ps'
+    stage('Verify Deployment') {
+        steps {
+            bat '"C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker-compose.exe" ps'
+        }
     }
-}
 }
 
 post {
     success {
         echo 'CI/CD pipeline completed successfully!'
     }
+
     failure {
         echo 'Pipeline failed. Check the stage logs for details.'
     }
