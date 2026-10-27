@@ -1,0 +1,80 @@
+pipeline {
+agent any
+
+options {
+    timestamps()
+}
+
+environment {
+    KUBECTL = 'C:\\Users\\maham\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\kubectl.exe'
+    KUBECONFIG = 'C:\\jenkins-kube\\config'
+    K3D = 'C:\\Users\\maham\\AppData\\Local\\Microsoft\\WinGet\\Packages\\k3d.k3d_Microsoft.Winget.Source_8wekyb3d8bbwe\\k3d.exe'
+    NAMESPACE = 'library-management'
+    BACKEND_IMAGE = 'library-management-backend:latest'
+    FRONTEND_IMAGE = 'library-management-frontend:latest'
+}
+
+stages {
+    stage('Checkout') {
+        steps {
+            checkout scm
+        }
+    }
+
+    stage('Build Backend Image') {
+        steps {
+            bat 'docker build -t %BACKEND_IMAGE% -f backend\\Dockerfile backend'
+        }
+    }
+
+    stage('Build Frontend Image') {
+        steps {
+            bat 'docker build -t %FRONTEND_IMAGE% -f frontend\\Dockerfile frontend'
+        }
+    }
+
+    stage('Import Images into k3d') {
+        steps {
+            bat '"%K3D%" image import %BACKEND_IMAGE% %FRONTEND_IMAGE% -c library-cluster'
+        }
+    }
+
+    stage('Deploy to Kubernetes') {
+        steps {
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" apply -f k8s\\namespace.yaml'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" apply -f k8s\\mysql.yaml'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" apply -f k8s\\backend.yaml'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" apply -f k8s\\frontend.yaml'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" apply -f k8s\\backend-hpa.yaml'
+        }
+    }
+
+    stage('Restart Deployments') {
+        steps {
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" rollout restart deployment/backend -n %NAMESPACE%'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" rollout restart deployment/frontend -n %NAMESPACE%'
+        }
+    }
+
+    stage('Verify Rollout') {
+        steps {
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" rollout status deployment/mysql -n %NAMESPACE% --timeout=180s'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" rollout status deployment/backend -n %NAMESPACE% --timeout=180s'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" rollout status deployment/frontend -n %NAMESPACE% --timeout=180s'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" get deployments -n %NAMESPACE%'
+            bat '"%KUBECTL%" --kubeconfig "%KUBECONFIG%" get hpa -n %NAMESPACE%'
+        }
+    }
+}
+
+post {
+    success {
+        echo 'Kubernetes deployment completed successfully.'
+    }
+    failure {
+        echo 'Kubernetes deployment failed. Check the stage logs above.'
+    }
+}
+
+
+}
